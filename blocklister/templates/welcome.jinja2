@@ -27,12 +27,26 @@ listname           The name of the resulting addresslist
 comment            Use this query parameter to adjust the comment which will be
                    used for this addresslist (Please make sure that this comment
                    is unique among your addresslists)
+cidr               Return listed IP ranges as CIDR notation
 
 
-Example with curl
+Multilist
+---------
+
+Multilist is a new feature that enables you to get results from multiple
+blocklists by using one single HTTP GET call. Simply pass all the names of the
+blocklists you would like to have concatenated into one result into the query
+parameter `blocklists`. Such as 
+http://blocklister.gefoo.org/multilist?blocklists=badpeers,ads
+
+Please note that on this resource query parameters such as `listname` and
+`comment` are also possible.
+
+Examples with curl
 -----------------
 
 curl https://blocklister.gefoo.org/ads?listname=Blocklist?comment=ads
+curl http://blocklister.gefoo.org/multilist?blocklists=ads,badpeer&comment=MyList
 
 
 Example with RouterOS

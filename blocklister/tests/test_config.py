@@ -1,5 +1,11 @@
+import sys
 import unittest
-from unittest.mock import patch
+
+if sys.version_info[0] == 3:  # noqa
+    from unittest.mock import patch
+else:
+    from mock import patch
+
 from textwrap import dedent
 
 from tempfile import NamedTemporaryFile
@@ -62,18 +68,27 @@ class TestConfig(unittest.TestCase):
     def test_get_list(self):
         result = self.config.get_list('testing', 'list')
         expected = ['item1', 'item2', 'item3']
-        self.assertCountEqual(result, expected)
+        if sys.version_info[0] == 3:  # noqa
+            self.assertCountEqual(result, expected)
+        else:
+            self.assertItemsEqual(result, expected)
 
     def test_get_list_single_item(self):
         result = self.config.get_list('testing', 'list_single')
         expected = ['item1']
-        self.assertCountEqual(result, expected)
+        if sys.version_info[0] == 3:  # noqa
+            self.assertCountEqual(result, expected)
+        else:
+            self.assertItemsEqual(result, expected)
 
     def test_get_list_default(self):
         result = self.config.get_list(
             'testing', 'listNotFound', default=['1', '2'])
         expected = ['1', '2']
-        self.assertCountEqual(result, expected)
+        if sys.version_info[0] == 3:  # noqa
+            self.assertCountEqual(result, expected)
+        else:
+            self.assertItemsEqual(result, expected)
 
     def test_get_int(self):
         result = self.config.get_int('testing', 'foo')
@@ -83,6 +98,11 @@ class TestConfig(unittest.TestCase):
     def test_get_int_valueerror(self):
         with self.assertRaises(ConfigError):
             self.config.get_int('testing', 'bar')
+
+    def test_get_boolean(self):
+        result = self.config.get_boolean('testing', 'enabled', default=False)
+        expected = True
+        self.assertEqual(result, expected)
 
     @patch('blocklister.config.exists')
     def test_load_searchfile(self, exists_mock):

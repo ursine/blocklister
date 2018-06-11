@@ -18,21 +18,33 @@ fab.env.roledefs = {
 
 @fab.task
 def develop():
+    """
+    Prepares a development environment
+    """
+    dev_packages = [
+        'pytest', 'pytest-xdist', 'pytest-pep8', 'tox', 'httpie'
+    ]
     if not path.exists("env"):
         fab.local("virtualenv -p /usr/bin/python3 env")
+    fab.local("env/bin/pip install --upgrade pip setuptools")
     fab.local("env/bin/python setup.py develop")
-    fab.local("env/bin/pip install pytest")
-    fab.local("env/bin/pip install pytest-xdist")
+    fab.local("env/bin/pip install {}".format(" ".join(dev_packages)))
 
 
 @fab.task
 def test():
+    """
+    Run Py.test
+    """
     fab.local("env/bin/py.test -f --color yes blocklister")
 
 
 @fab.roles('pyrepo')
 @fab.task
 def publish():
+    """
+    Publish package to pyrepo.gefoo.org
+    """
     fab.local("env/bin/python setup.py sdist")
     tar_filename = fab.local(
         "env/bin/python setup.py --fullname", capture=True
@@ -43,6 +55,9 @@ def publish():
 
 @fab.task
 def deploy():
+    """
+    Deploy package
+    """
     branch = fab.local('git rev-parse --abbrev-ref HEAD', capture=True)
 
     if branch == "develop":
@@ -70,6 +85,8 @@ def deploy():
         fab.execute("publish")
         fab.env.user = USER
         with fab.cd(DEPLOY_DIR):
+            fab.run("env/bin/pip install --upgrade pip")
+            fab.run("env/bin/pip install --upgrade setuptools")
             fab.run(
                 "env/bin/pip install --trusted-host pyrepo.gefoo.org "
                 "--upgrade -f {} {}"
